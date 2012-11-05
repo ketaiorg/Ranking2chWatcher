@@ -26,12 +26,12 @@ exit(0);
 
 
 /**
- *
+ * Ranking_2ch_Watcher
  */
 class Ranking_2ch_Watcher
 {
 	/**
-	 *
+	 * 処理実行
 	 */
 	function run()
 	{
