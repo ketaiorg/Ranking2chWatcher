@@ -19,16 +19,15 @@ define('SEARCH_KEYWORD', '/^.*ブラウザ.*part.*$/');					// 検索キーワ�
 define('API_URL', 'http://2ch-ranking.net/ranking.json?board=');	// APIのURL
 
 // 実行
-$r2ch = new Ranking_2ch_Watcher();
+$r2ch = new Ranking2chWatcher();
 $r2ch->run();
-exit(0);
 
 
 
 /**
  * Ranking_2ch_Watcher
  */
-class Ranking_2ch_Watcher
+class Ranking2chWatcher
 {
 	/**
 	 * 処理実行
