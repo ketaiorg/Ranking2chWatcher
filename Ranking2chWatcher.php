@@ -18,10 +18,15 @@ define('BOARD_NAME', 'gameswf');									// 板の名前
 define('SEARCH_KEYWORD', '/^.*ブラウザ.*part.*$/');					// 検索キーワードを正規表現で定義（通常はタイトル名を定義）
 define('API_URL', 'http://2ch-ranking.net/ranking.json?board=');	// APIのURL
 define('TMP_FILE', '/tmp/Ranking2chWatcher_%%HASH%%');				// テンポラリパス名
+if (!defined('DEBUG_MODE')) {
+	define('DEBUG_MODE', true);										// デバッグ情報を表示するか
+}
 
 // 実行
-$r2ch = new Ranking2chWatcher();
-$r2ch->run();
+if (!defined('TEST_MODE') or true !== TEST_MODE) {
+	$r2ch = new Ranking2chWatcher();
+	$r2ch->run();
+}
 
 
 
@@ -35,36 +40,44 @@ class Ranking2chWatcher
 	 */
 	public function run()
 	{
-		// テンポラリファイルの読み込み
-		$file_name = strtr(TMP_FILE, array('%%HASH%%' => md5(API_URL . BOARD_NAME)));
-		$file_data = $this->readTmpFile($file_name);
-		if (is_null($file_data)) {
-			// テンポラリファイルが読めなかった場合は、初期値をセット
-			$file_data = json_decode();
-			$file_data->time = time();
-			$file_data->value = 0;
-		}
+		try {
+			// テンポラリファイルの読み込み
+			$file_name = strtr(TMP_FILE, array('%%HASH%%' => md5(API_URL . BOARD_NAME)));
+			$file_data = $this->readTmpFile($file_name);
+			if (is_null($file_data)) {
+				// テンポラリファイルが読めなかった場合は、初期値をセット
+				$file_data = json_decode();
+				$file_data->time = time();
+				$file_data->value = 0;
+			}
 
-		// APIからデータを取得
-		$thread_list = $this->getThreadList($file_data->time);
-		if (is_null($thread_list)) {
-			// 前回取得時と比べて変化がないので、キャッシュデータを利用
-			$forces = $file_data->value;
-		} else {
-			// キーワードから対象スレッドの勢いを調べる
-			$forces = $this->getForces($thread_list, SEARCH_KEYWORD);
+			// APIからデータを取得
+			$thread_list = $this->getThreadList($file_data->time);
+			if (is_null($thread_list)) {
+				// 前回取得時と比べて変化がないので、キャッシュデータを利用
+				$forces = $file_data->value;
+			} else {
+				// キーワードから対象スレッドの勢いを調べる
+				$forces = $this->getForces($thread_list, SEARCH_KEYWORD);
 
-			// テンポラリファイルへ最新の情報を保存
-			$file_data->time = time();
-			$file_data->value = $forces;
-			if (!$this->putTmpFile($file_name, json_encode($file_data))) {
-				// ファイル出力エラーの場合
+				// テンポラリファイルへ最新の情報を保存
+				$file_data->time = time();
+				$file_data->value = $forces;
+				if (!$this->putTmpFile($file_name, json_encode($file_data))) {
+					// ファイル出力エラーの場合
+					throw new Exception('file output error.');
+				}
+			}
+
+			// 出力
+			echo $forces;
+		} catch (Exception $e) {
+			// エラーの場合、標準エラーに出力して終了
+			if (DEBUG_MODE) {
+				fputs(STDERR, $e->getMessage() . "\n");
 				exit(1);
 			}
 		}
-
-		// 出力
-		echo $forces;
 	}
 
 
@@ -119,6 +132,7 @@ class Ranking2chWatcher
 	 * APIからデータを取得する
 	 * @param int $last_access 最後にアクセスを行ったUNIXタイム
 	 * @return string APIから取得した文字列データ、ただしステータスコードが304の場合はnullが返る
+	 * @throws exception
 	 */
 	protected function getThreadList($last_access)
 	{
@@ -134,7 +148,7 @@ class Ranking2chWatcher
 		if (false === $ret) {
 			// curlに失敗した（通信エラー）
 			curl_close($ch);
-			exit(1);
+			throw new Exception('curl error.');
 		}
 
 		// ステータスコードを取得
@@ -152,7 +166,7 @@ class Ranking2chWatcher
 			$ret = substr($ret, 0, -1 * strlen(');'));		// 最後の不要部分をカット
 		} else {
 			// その他のステータスコード異常
-			exit(1);
+			throw new Exception('status code error.');
 		}
 
 		return $ret;
@@ -171,7 +185,7 @@ class Ranking2chWatcher
 		$thread_arr = json_decode($thread_list, true);
 		if (null === $thread_arr) {
 			// json_decodeに失敗した
-			exit(1);
+			throw new Exception('json decode error.');
 		}
 
 		foreach ($thread_arr as $row) {
