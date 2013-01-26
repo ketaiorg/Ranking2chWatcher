@@ -47,7 +47,7 @@ class Ranking2chWatcher
 			if (is_null($file_data)) {
 				// テンポラリファイルが読めなかった場合は、初期値をセット
 				$file_data = json_decode('');
-				$file_data->time = time();
+				$file_data->time = 0;
 				$file_data->value = 0;
 			}
 
