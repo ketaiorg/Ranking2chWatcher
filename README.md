@@ -1,8 +1,8 @@
 # Ranking2chWatcher
 
-@author 松井 健太郎 (Kentaro Matsui) <info@ke-tai.org>
-@copyright ke-tai.org
-@license BSD
+* @author 松井 健太郎 (Kentaro Matsui) <info@ke-tai.org>
+* @copyright ke-tai.org
+* @license BSD
 
 ----
 
@@ -25,3 +25,4 @@
 - http://2ch-ranking.net/
 - http://2ch-ranking.net/api.html
 - https://github.com/ketaiorg/Ranking2chWatcher/
+- http://www.infiniteloop.co.jp/blog/2012/11/2chcacti/
