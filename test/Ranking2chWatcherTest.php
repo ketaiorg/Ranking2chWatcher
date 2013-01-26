@@ -27,6 +27,9 @@ class Ranking2chWatcherTest extends PHPUnit_Framework_TestCase
 	 */
 	protected $object;
 	protected $thread_list;
+	protected $tmp_file;
+	protected $dummy_time = 1234567890;
+	protected $dummy_value = 99999;
 
 	/**
 	 * Sets up the fixture, for example, opens a network connection.
@@ -37,7 +40,12 @@ class Ranking2chWatcherTest extends PHPUnit_Framework_TestCase
 		chdir(dirname(__FILE__));
 		require_once '../Ranking2chWatcher.php';
 		$this->object = new Ranking2chWatcher;
+
+		// ダミーの応答文字列を読み込み
 		$this->thread_list = file_get_contents('data/sample_thread_list.json');
+
+		// テンポラリファイル名を決定
+		$this->tmp_file = strtr(TMP_FILE, array('%%HASH%%' => __CLASS__));
 	}
 
 	/**
@@ -46,6 +54,7 @@ class Ranking2chWatcherTest extends PHPUnit_Framework_TestCase
 	 */
 	protected function tearDown()
 	{
+		$this->removeTestTmpFile();
 	}
 
 	/**
@@ -99,5 +108,78 @@ class Ranking2chWatcherTest extends PHPUnit_Framework_TestCase
 		$ret_no_match = $ref->invoke($this->object, $this->thread_list, '/^$/');
 		$this->assertNotNull($ret_no_match);
 		$this->assertEquals(0, $ret_no_match);
+	}
+
+	/**
+	 * テストから呼ばれるテンポラリファイル作成メソッド
+	 * @return bool putTmpFileの戻り値
+	 */
+	public function makeTestTmpFile()
+	{
+		$file_data = json_decode('');
+		$file_data->time = $this->dummy_time;
+		$file_data->value = $this->dummy_value;
+
+		$ref = new ReflectionMethod($this->object, 'putTmpFile');
+		$ref->setAccessible(true);
+		$ret = $ref->invoke($this->object, $this->tmp_file, json_encode($file_data));
+
+		return $ret;
+	}
+
+	/**
+	 * テストから呼ばれるテンポラリファイル削除メソッド
+	 */
+	public function removeTestTmpFile()
+	{
+		if (file_exists($this->tmp_file)) {
+			unlink($this->tmp_file);
+		}
+	}
+
+	/**
+	 * @covers Ranking2chWatcher::putTmpFile
+	 */
+	public function testPutTmpFile()
+	{
+		// 新規作成
+		$this->removeTestTmpFile();
+		$ret = $this->makeTestTmpFile();
+		$this->assertTrue($ret);
+		$this->assertTrue(file_exists($this->tmp_file));
+
+		// 上書き
+		$ret = $this->makeTestTmpFile();
+		$this->assertTrue($ret);
+		$this->assertTrue(file_exists($this->tmp_file));
+	}
+
+	/**
+	 * @covers Ranking2chWatcher::readTmpFile
+	 */
+	public function testReadTmpFile()
+	{
+		// テストに必要なテンポラリファイルの作成
+		$this->removeTestTmpFile();
+		$ret = $this->makeTestTmpFile();
+		$this->assertTrue($ret);
+		$this->assertTrue(file_exists($this->tmp_file));
+
+		$ref = new ReflectionMethod($this->object, ucwords(substr(__FUNCTION__, 4)));
+		$ref->setAccessible(true);
+		$file_data = $ref->invoke($this->object, $this->tmp_file);
+
+		// ファイルが存在するときの挙動テスト
+		$this->assertTrue(file_exists($this->tmp_file));
+		$this->assertNotNull($file_data);
+		$this->assertNotEmpty($file_data);
+		$this->assertEquals($file_data->time, $this->dummy_time);
+		$this->assertEquals($file_data->value, $this->dummy_value);
+
+		// ファイルが存在しない場合の挙動テスト
+		$this->removeTestTmpFile();
+		$this->assertFalse(file_exists($this->tmp_file));
+		$file_data_del = $ref->invoke($this->object, $this->tmp_file);
+		$this->assertNull($file_data_del);
 	}
 }
