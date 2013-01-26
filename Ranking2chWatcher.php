@@ -20,7 +20,7 @@ define('SEARCH_KEYWORD', '/^.*ブラウザ.*part.*$/');					// 検索キーワ�
 define('API_URL', 'http://2ch-ranking.net/ranking.json?board=');	// APIのURL
 define('TMP_FILE', '/tmp/Ranking2chWatcher_%%HASH%%');				// テンポラリパス名
 if (!defined('DEBUG_MODE')) {
-	define('DEBUG_MODE', true);										// デバッグ情報を表示するか
+	define('DEBUG_MODE', false);									// デバッグ情報を表示するか
 }
 
 // 実行
