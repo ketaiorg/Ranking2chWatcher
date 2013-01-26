@@ -22,37 +22,37 @@ define('TEST_MODE', true);		// テストクラスからの実行
  */
 class Ranking2chWatcherTest extends PHPUnit_Framework_TestCase
 {
-    /**
-     * @var Ranking2chWatcher
-     */
-    protected $object;
-    protected $thread_list;
+	/**
+	 * @var Ranking2chWatcher
+	 */
+	protected $object;
+	protected $thread_list;
 
-    /**
-     * Sets up the fixture, for example, opens a network connection.
-     * This method is called before a test is executed.
-     */
-    protected function setUp()
-    {
+	/**
+	 * Sets up the fixture, for example, opens a network connection.
+	 * This method is called before a test is executed.
+	 */
+	protected function setUp()
+	{
 		chdir(dirname(__FILE__));
 		require_once '../Ranking2chWatcher.php';
-        $this->object = new Ranking2chWatcher;
+		$this->object = new Ranking2chWatcher;
 		$this->thread_list = file_get_contents('data/sample_thread_list.json');
-    }
+	}
 
-    /**
-     * Tears down the fixture, for example, closes a network connection.
-     * This method is called after a test is executed.
-     */
-    protected function tearDown()
-    {
-    }
+	/**
+	 * Tears down the fixture, for example, closes a network connection.
+	 * This method is called after a test is executed.
+	 */
+	protected function tearDown()
+	{
+	}
 
-    /**
-     * @covers Ranking2chWatcher::run
-     */
-    public function testRun()
-    {
+	/**
+	 * @covers Ranking2chWatcher::run
+	 */
+	public function testRun()
+	{
 		ob_start();
 		$ret = $this->object->run();
 		$output = ob_get_contents();
@@ -60,13 +60,13 @@ class Ranking2chWatcherTest extends PHPUnit_Framework_TestCase
 		$this->assertNull($ret);
 		$this->assertNotNull($output);
 		$this->assertNotEmpty($output);
-    }
+	}
 
-    /**
-     * @covers Ranking2chWatcher::getThreadList
-     */
-    public function testGetThreadList()
-    {
+	/**
+	 * @covers Ranking2chWatcher::getThreadList
+	 */
+	public function testGetThreadList()
+	{
 		$ref = new ReflectionMethod($this->object, ucwords(substr(__FUNCTION__, 4)));
 		$ref->setAccessible(true);
 		$thread_list = $ref->invoke($this->object, 0);
@@ -80,13 +80,13 @@ class Ranking2chWatcherTest extends PHPUnit_Framework_TestCase
 			$this->assertNotEmpty($thread_list);
 			$this->assertFalse(!json_decode($thread_list));
 		}
-    }
+	}
 
-    /**
-     * @covers Ranking2chWatcher::getForces
-     */
-    public function testGetForces()
-    {
+	/**
+	 * @covers Ranking2chWatcher::getForces
+	 */
+	public function testGetForces()
+	{
 		// キーワードにマッチする場合
 		$ref = new ReflectionMethod($this->object, ucwords(substr(__FUNCTION__, 4)));
 		$ref->setAccessible(true);
@@ -99,5 +99,5 @@ class Ranking2chWatcherTest extends PHPUnit_Framework_TestCase
 		$ret_no_match = $ref->invoke($this->object, $this->thread_list, '/^$/');
 		$this->assertNotNull($ret_no_match);
 		$this->assertEquals(0, $ret_no_match);
-    }
+	}
 }
