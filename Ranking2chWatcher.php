@@ -10,7 +10,8 @@
  * @author		松井 健太郎 (Kentaro Matsui) <info@ke-tai.org>
  * @copyright	ke-tai.org
  * @license		BSD
- * @see			http://2ch-ranking.net/api.html
+ * @link		http://2ch-ranking.net/api.html
+ * @link		https://github.com/ketaiorg/Ranking2chWatcher/
  **/
 
 // 定義
