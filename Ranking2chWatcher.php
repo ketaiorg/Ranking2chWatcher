@@ -43,7 +43,7 @@ class Ranking2chWatcher
 	{
 		try {
 			// テンポラリファイルの読み込み
-			$file_name = strtr(TMP_FILE, array('%%HASH%%' => md5(API_URL . BOARD_NAME)));
+			$file_name = strtr(TMP_FILE, array('%%HASH%%' => md5(API_URL . BOARD_NAME . SEARCH_KEYWORD)));
 			$file_data = $this->readTmpFile($file_name);
 			if (is_null($file_data)) {
 				// テンポラリファイルが読めなかった場合は、初期値をセット
